@@ -191,7 +191,7 @@ export async function POST(request) {
     } = body;
 
     const catKey = categoryCode || categoryId || category;
-    const wardKey = wardNumber !== undefined ? wardNumber : (wardId || ward);
+    const wardKey = (wardNumber !== undefined && wardNumber !== null && wardNumber !== '') ? wardNumber : (wardId || ward || 1);
 
     // Validation
     if (!title || !title.trim()) {
@@ -202,9 +202,6 @@ export async function POST(request) {
     }
     if (!catKey) {
       return NextResponse.json({ error: 'Please select an issue category.' }, { status: 400 });
-    }
-    if (wardKey === undefined || wardKey === null || wardKey === '') {
-      return NextResponse.json({ error: 'Please select a Pune administrative ward.' }, { status: 400 });
     }
     if (!address || !address.trim()) {
       return NextResponse.json({ error: 'Street address or location is required.' }, { status: 400 });

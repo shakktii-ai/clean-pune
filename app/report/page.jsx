@@ -13,30 +13,16 @@ import {
   ArrowLeft,
   Shield,
   Clock,
-  Sparkles,
   Crosshair,
   Lock,
-  Eye,
-  EyeOff,
   Copy,
   Check,
   X,
   Upload,
-  Info,
 } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageProvider';
 import { PriorityBadge } from '@/components/Badge';
 import { DEMO_CATEGORIES, DEMO_WARDS } from '@/lib/demoData';
-
-// Preset Pune landmark hotspots for 1-click location pinning
-const PUNE_HOTSPOTS = [
-  { name: 'FC Road / Goodluck Chowk', ward: 2, lat: 18.5167, lng: 73.8415, addr: 'Near Cafe Goodluck, FC Road, Shivajinagar, Pune' },
-  { name: 'Baner High Street', ward: 1, lat: 18.5598, lng: 73.7912, addr: 'Lane 4, Near Datta Mandir, Baner Road, Pune' },
-  { name: 'Kothrud / Dahanukar Colony', ward: 3, lat: 18.5023, lng: 73.8115, addr: 'Near Cummins College, Dahanukar Colony, Kothrud, Pune' },
-  { name: 'Kasba Peth / Ganpati Mandir', ward: 4, lat: 18.5204, lng: 73.8540, addr: 'Near Kasba Ganpati Mandir, Shaniwar Peth, Pune' },
-  { name: 'Hadapsar Gadital', ward: 5, lat: 18.5089, lng: 73.9260, addr: 'Solapur Road, Near Gadital Chowk, Hadapsar, Pune' },
-  { name: 'Viman Nagar / Phoenix Corridor', ward: 6, lat: 18.5582, lng: 73.9168, addr: 'Nagar Road, Opposite Phoenix Marketcity, Viman Nagar, Pune' },
-];
 
 export default function ReportPage() {
   const { t, language } = useLanguage();
@@ -45,20 +31,20 @@ export default function ReportPage() {
   const [categories, setCategories] = useState(DEMO_CATEGORIES);
   const [wards, setWards] = useState(DEMO_WARDS);
 
-  // Form State
+  // Form State - Location starts empty (mandatory input), 100% anonymous by default
   const [formData, setFormData] = useState({
     categoryCode: 'CAT_POTHOLE',
     subcategory: 'POTHOLE_DEEP',
-    wardNumber: '2',
-    address: 'Near Cafe Goodluck, FC Road, Shivajinagar, Pune',
-    landmark: 'Opposite Deccan Gymkhana Bus Stand',
-    latitude: 18.5167,
-    longitude: 73.8415,
+    wardNumber: '1',
+    address: '',
+    landmark: '',
+    latitude: 18.5204,
+    longitude: 73.8567,
     title: '',
     description: '',
     priority: 'HIGH',
     evidence: [],
-    isAnonymous: false,
+    isAnonymous: true,
     isSensitive: false,
     citizenName: '',
     citizenPhone: '',
@@ -75,55 +61,6 @@ export default function ReportPage() {
   const [error, setError] = useState('');
   const [successComplaint, setSuccessComplaint] = useState(null);
   const [copiedToken, setCopiedToken] = useState(false);
-
-  // AI Triage Assistant State
-  const [aiAnalyzing, setAiAnalyzing] = useState(false);
-  const [aiResult, setAiResult] = useState(null);
-  const [aiError, setAiError] = useState('');
-
-  const handleAiAnalyze = async () => {
-    const textToAnalyze = `${formData.title} ${formData.description}`.trim();
-    if (textToAnalyze.length < 5) {
-      setAiError('Please enter at least a few words in title or description to analyze.');
-      return;
-    }
-    setAiAnalyzing(true);
-    setAiError('');
-    try {
-      const res = await fetch('/api/ai/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: textToAnalyze,
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-          categoryCode: formData.categoryCode,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'AI analysis unavailable');
-      setAiResult(data.analysis);
-    } catch (err) {
-      setAiError(err.message || 'AI service unavailable');
-    } finally {
-      setAiAnalyzing(false);
-    }
-  };
-
-  const applyAiSuggestions = () => {
-    if (!aiResult) return;
-    const updates = { ...formData };
-    if (aiResult.suggestedCategoryCode) {
-      updates.categoryCode = aiResult.suggestedCategoryCode;
-      if (aiResult.suggestedSubcategoryCode) {
-        updates.subcategory = aiResult.suggestedSubcategoryCode;
-      }
-    }
-    if (aiResult.suggestedPriority) {
-      updates.priority = aiResult.suggestedPriority;
-    }
-    setFormData(updates);
-  };
 
   useEffect(() => {
     // Fetch live categories and wards if available
@@ -236,11 +173,7 @@ export default function ReportPage() {
       }
     } else if (step === 2) {
       if (!formData.address.trim()) {
-        setError('Please specify the street location or road name.');
-        return;
-      }
-      if (!formData.wardNumber) {
-        setError('Please select the applicable Pune Ward office.');
+        setError('Location is mandatory. Please enter the street address or road name in Pune.');
         return;
       }
     } else if (step === 3) {
@@ -405,16 +338,16 @@ export default function ReportPage() {
                 setFormData({
                   categoryCode: 'CAT_POTHOLE',
                   subcategory: 'POTHOLE_DEEP',
-                  wardNumber: '2',
+                  wardNumber: '1',
                   address: '',
                   landmark: '',
-                  latitude: 18.5167,
+                  latitude: 18.5204,
                   longitude: 73.8567,
                   title: '',
                   description: '',
                   priority: 'HIGH',
                   evidence: [],
-                  isAnonymous: false,
+                  isAnonymous: true,
                   isSensitive: false,
                   citizenName: '',
                   citizenPhone: '',
@@ -547,13 +480,13 @@ export default function ReportPage() {
               </div>
             )}
 
-            {/* STEP 2: LOCATION & PUNE WARD PICKER */}
+            {/* STEP 2: LOCATION */}
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Step 2: Location & Pune Ward</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Step 2: Location</h2>
                   <p className="text-xs text-slate-500">
-                    Use browser GPS, select from Pune hotspots, or manually input street coordinates.
+                    Location is mandatory. Use device GPS or enter the street address and road name in Pune.
                   </p>
                 </div>
 
@@ -568,7 +501,7 @@ export default function ReportPage() {
                         Detect Device GPS Coordinates
                       </span>
                       <span className="text-[11px] text-slate-500">
-                        Requires explicit browser location permission
+                        Requires browser location permission
                       </span>
                     </div>
                   </div>
@@ -583,45 +516,18 @@ export default function ReportPage() {
                   </button>
                 </div>
 
-                {/* Quick Pune Landmarks Picker */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-700">
-                    Quick Landmark Presets (Pune):
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {PUNE_HOTSPOTS.map((hotspot) => (
-                      <button
-                        key={hotspot.name}
-                        type="button"
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            wardNumber: String(hotspot.ward),
-                            address: hotspot.addr,
-                            latitude: hotspot.lat,
-                            longitude: hotspot.lng,
-                          })
-                        }
-                        className="p-2 rounded-lg bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-left text-[11px] transition-colors"
-                      >
-                        <span className="font-semibold text-slate-900 block truncate">{hotspot.name}</span>
-                        <span className="text-[10px] text-blue-600">Ward {hotspot.ward}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                {/* Street Address & Landmark */}
+                <div className="space-y-4 pt-1">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Street Address / Road Name <span className="text-rose-500">*</span>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
+                      Street Address / Road Name <span className="text-rose-500">* (Mandatory)</span>
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Near Cafe Goodluck, FC Road"
+                      placeholder="e.g. MG Road, Near Westend Mall / Karve Road, Pune"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                       required
                     />
                   </div>
@@ -632,32 +538,16 @@ export default function ReportPage() {
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Opposite Deccan Gymkhana Bus Stand"
+                      placeholder="e.g. Opposite Metro Pillar 42 / Near Bus Stop"
                       value={formData.landmark}
                       onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Pune Administrative Ward <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={formData.wardNumber}
-                      onChange={(e) => setFormData({ ...formData, wardNumber: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                    >
-                      {wards.map((w) => (
-                        <option key={w._id} value={String(w.wardNumber)}>
-                          Ward {w.wardNumber}: {w.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
+                {/* Coordinates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">Latitude</label>
                     <input
@@ -665,7 +555,7 @@ export default function ReportPage() {
                       step="any"
                       value={formData.latitude}
                       onChange={(e) => setFormData({ ...formData, latitude: parseFloat(e.target.value) || 18.5204 })}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono bg-white"
                     />
                   </div>
 
@@ -676,7 +566,7 @@ export default function ReportPage() {
                       step="any"
                       value={formData.longitude}
                       onChange={(e) => setFormData({ ...formData, longitude: parseFloat(e.target.value) || 73.8567 })}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono bg-white"
                     />
                   </div>
                 </div>
@@ -719,86 +609,6 @@ export default function ReportPage() {
                   />
                 </div>
 
-                {/* AI Civic Intelligence Advisor */}
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
-                        <Sparkles className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="text-xs font-bold text-slate-800">
-                        AI Grievance Intelligence (Advisory)
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleAiAnalyze}
-                      disabled={aiAnalyzing}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      <span>{aiAnalyzing ? 'Analyzing Issue...' : 'Smart Suggest'}</span>
-                    </button>
-                  </div>
-
-                  <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Automatically extracts categories, severity, Marathi-English context, and checks for nearby duplicate reports. Strictly advisory — humans hold final operational discretion.
-                  </p>
-
-                  {aiError && (
-                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-[11px] text-rose-700">
-                      {aiError}
-                    </div>
-                  )}
-
-                  {aiResult && (
-                    <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-3 text-xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div className="p-2 bg-slate-50 rounded-lg">
-                          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Suggested Category</span>
-                          <span className="font-bold text-slate-900">{aiResult.suggestedCategoryCode || 'N/A'}</span>
-                        </div>
-                        <div className="p-2 bg-slate-50 rounded-lg">
-                          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Suggested Urgency</span>
-                          <span className="font-bold text-blue-700">{aiResult.suggestedPriority}</span>
-                        </div>
-                      </div>
-
-                      {aiResult.summary && (
-                        <div className="p-2 bg-slate-50 rounded-lg">
-                          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Executive Summary</span>
-                          <p className="text-slate-700 italic text-[11px]">{aiResult.summary}</p>
-                        </div>
-                      )}
-
-                      {aiResult.duplicateCandidates?.length > 0 && (
-                        <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-900">
-                          <span className="font-semibold block text-[11px]">Notice: Similar reports detected nearby:</span>
-                          <ul className="list-disc pl-4 mt-1 space-y-0.5 text-[11px]">
-                            {aiResult.duplicateCandidates.map((dup) => (
-                              <li key={dup.complaintId}>
-                                <strong>{dup.complaintId}</strong> — {dup.title} ({Math.round(dup.similarityScore * 100)}% match)
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10px] text-slate-400">
-                          Confidence: {Math.round(aiResult.confidenceScore * 100)}% ({aiResult.engine})
-                        </span>
-                        <button
-                          type="button"
-                          onClick={applyAiSuggestions}
-                          className="px-3 py-1 rounded-md text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors cursor-pointer"
-                        >
-                          Apply Suggestions
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-2">
@@ -908,84 +718,30 @@ export default function ReportPage() {
               </div>
             )}
 
-            {/* STEP 5: PRIVACY, REPORTER INFO & REVIEW */}
+            {/* STEP 5: REVIEW CONFIRMATION (100% ANONYMOUS) */}
             {step === 5 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">Step 5: Privacy & Review Confirmation</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Step 5: Review & Confirmation</h2>
                   <p className="text-xs text-slate-500">
-                    Verify all information before submitting for public accountability.
+                    Verify grievance details before submitting for municipal tracking.
                   </p>
                 </div>
 
-                {/* Privacy Preferences */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    Privacy Controls
-                  </h3>
-
-                  <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={formData.isAnonymous}
-                      onChange={(e) => setFormData({ ...formData, isAnonymous: e.target.checked })}
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 mt-0.5"
-                    />
-                    <span>
-                      <strong>Submit as Anonymous:</strong> Your personal identity will not be linked
-                      or displayed in the public complaint registry.
-                    </span>
-                  </label>
-
-                  <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={formData.isSensitive}
-                      onChange={(e) => setFormData({ ...formData, isSensitive: e.target.checked })}
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 mt-0.5"
-                    />
-                    <span>
-                      <strong>Sensitive / Confidential Issue:</strong> Hide public map markers. Accessible
-                      only via confidential tracking token or official staff login.
-                    </span>
-                  </label>
-                </div>
-
-                {/* Reporter Contact Info if not anonymous */}
-                {!formData.isAnonymous && (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Your Name</label>
-                      <input
-                        type="text"
-                        placeholder="Rahul Sharma"
-                        value={formData.citizenName}
-                        onChange={(e) => setFormData({ ...formData, citizenName: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile (SMS updates)</label>
-                      <input
-                        type="tel"
-                        placeholder="9876543210"
-                        value={formData.citizenPhone}
-                        onChange={(e) => setFormData({ ...formData, citizenPhone: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        placeholder="citizen@example.com"
-                        value={formData.citizenEmail}
-                        onChange={(e) => setFormData({ ...formData, citizenEmail: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
+                {/* 100% Anonymous Reporting Notice */}
+                <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <Shield className="w-4 h-4" />
                   </div>
-                )}
+                  <div className="text-xs space-y-1">
+                    <span className="font-bold text-slate-900 block">
+                      100% Anonymous Civic Reporting
+                    </span>
+                    <p className="text-slate-600 leading-relaxed">
+                      All grievances on Pune Civic Platform are submitted completely anonymously. No personal name, phone number, or login credentials are required or stored.
+                    </p>
+                  </div>
+                </div>
 
                 {/* Review Summary Card */}
                 <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
@@ -999,11 +755,13 @@ export default function ReportPage() {
                       <strong>Title:</strong> {formData.title}
                     </p>
                     <p>
-                      <strong>Ward:</strong> Ward {formData.wardNumber}
-                    </p>
-                    <p>
                       <strong>Address:</strong> {formData.address}
                     </p>
+                    {formData.landmark && (
+                      <p>
+                        <strong>Landmark:</strong> {formData.landmark}
+                      </p>
+                    )}
                     <p>
                       <strong>Coordinates:</strong> {formData.latitude}, {formData.longitude}
                     </p>
