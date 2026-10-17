@@ -1,0 +1,30 @@
+{
+  "name": "pune-civic-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pune Civic Platform - Independent Civic Issue Reporting & Redressal",
+  "scripts": {
+    "dev": "next dev",
+    "dev:webpack": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "seed": "node scripts/seed.js",
+    "test": "node scripts/test-pune-bounds.js && node scripts/test-phase2.js && node scripts/test-phase3.js && node scripts/test-phase4.js",
+    "migrate:remove-roles": "node scripts/migrate-remove-roles.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.12",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.59.0",
+    "mongoose": "^9.11.2",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.30",
+    "tailwindcss": "^3.4.19"
+  }
+}
