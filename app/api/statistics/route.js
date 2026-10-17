@@ -24,7 +24,7 @@ export async function GET() {
         ] = await Promise.all([
           Complaint.countDocuments(),
           Complaint.countDocuments({ status: 'RESOLVED' }),
-          Complaint.countDocuments({ status: 'IN_PROGRESS' }),
+          Complaint.countDocuments({ status: { $in: ['IN_PROGRESS', 'ASSIGNED', 'UNDER_REVIEW'] } }),
           Complaint.aggregate([
             { $group: { _id: '$status', count: { $sum: 1 } } },
           ]),
