@@ -27,7 +27,6 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { StatusBadge, PriorityBadge } from '@/components/Badge';
-import { DEMO_COMPLAINTS } from '@/lib/demoData';
 
 function TrackContent() {
   const searchParams = useSearchParams();
@@ -171,10 +170,6 @@ function TrackContent() {
   useEffect(() => {
     if (initialToken || initialId) {
       lookupComplaint(initialToken || initialId);
-    } else {
-      // Default demo
-      setComplaint(DEMO_COMPLAINTS[0]);
-      setInputVal(DEMO_COMPLAINTS[0].complaintId);
     }
   }, [initialToken, initialId]);
 
@@ -295,6 +290,19 @@ function TrackContent() {
         <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs flex items-center gap-3">
           <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
           <span>{feedbackSuccess}</span>
+        </div>
+      )}
+
+      {/* Empty Initial State (When no complaint has been looked up yet) */}
+      {!complaint && !loading && !error && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center space-y-3 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center">
+            <Search className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-slate-800">Track Your Civic Grievance</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            Enter the unique Complaint ID or anonymous tracking token provided upon reporting your civic issue to view real-time status and photographic resolution proof.
+          </p>
         </div>
       )}
 
@@ -559,30 +567,6 @@ function TrackContent() {
                             disabled={isUploadingPhoto}
                           />
                         </label>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!resolutionPhotos.includes('/uploads/pothole_repaired_fc_road.jpg')) {
-                              setResolutionPhotos([...resolutionPhotos, '/uploads/pothole_repaired_fc_road.jpg']);
-                            }
-                          }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 transition cursor-pointer"
-                        >
-                          <span>+ Add Repaired Road Sample</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (!resolutionPhotos.includes('/uploads/garbage_cleaned_baner.jpg')) {
-                              setResolutionPhotos([...resolutionPhotos, '/uploads/garbage_cleaned_baner.jpg']);
-                            }
-                          }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 transition cursor-pointer"
-                        >
-                          <span>+ Add Cleared Site Sample</span>
-                        </button>
                       </div>
 
                       {/* Photo Preview Grid (Only shown when photos exist) */}
